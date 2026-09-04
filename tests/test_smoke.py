@@ -9,6 +9,7 @@ from zoneinfo import ZoneInfo
 import pytest
 
 from briefing import pipeline
+from briefing.analyze import openai_client
 from briefing.collectors import dart, krx, rss
 from briefing.logging_setup import setup_logging
 from briefing.models import (
@@ -77,6 +78,11 @@ def _stub_collectors(monkeypatch):
     monkeypatch.setattr(krx, "collect", fake_krx)
     monkeypatch.setattr(dart, "collect", fake_dart)
     monkeypatch.setattr(rss, "collect", fake_rss)
+    # 네트워크(OpenAI) 미사용 — 규칙 기반 경로로 결정론적 실행
+    monkeypatch.setattr(
+        openai_client, "_call_openai",
+        lambda *a, **k: (_ for _ in ()).throw(RuntimeError("no network in test")),
+    )
 
 
 @pytest.fixture
