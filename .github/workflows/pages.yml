@@ -1,0 +1,62 @@
+name: Daily briefing → GitHub Pages
+
+on:
+  schedule:
+    # 매 영업일 07:00 KST = 전일 22:00 UTC (일~목 → 월~금)
+    - cron: "0 22 * * 0-4"
+  workflow_dispatch: {}   # 수동 실행 버튼
+
+permissions:
+  contents: write          # gh-pages 브랜치에 커밋
+
+concurrency:
+  group: briefing-pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Checkout existing site (gh-pages, 과거 브리핑 누적)
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          path: published
+        continue-on-error: true
+
+      - name: Ensure publish dir
+        run: mkdir -p "$GITHUB_WORKSPACE/published"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - run: pip install -r requirements.txt
+
+      - name: Generate briefing
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENDART_API_KEY: ${{ secrets.OPENDART_API_KEY }}
+          DATA_GO_KR_KEY: ${{ secrets.DATA_GO_KR_KEY }}
+          BRIEFING_OUTPUT_DIR: ${{ github.workspace }}/published
+          BRIEFING_DATA_DIR: ${{ github.workspace }}/_data
+          BRIEFING_LOGS_DIR: ${{ github.workspace }}/_logs
+        run: |
+          python -m briefing || code=$?
+          # 1=렌더 실패만 CI 실패로 취급 (2=발송, 3=빈 브리핑은 통과)
+          if [ "${code:-0}" = "1" ]; then exit 1; fi
+          ls -la "$GITHUB_WORKSPACE/published" || true
+
+      - name: Deploy to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./published
+          publish_branch: gh-pages
+          keep_files: true
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+          commit_message: "briefing ${{ github.run_number }}"
