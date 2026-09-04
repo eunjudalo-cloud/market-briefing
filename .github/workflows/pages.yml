@@ -45,7 +45,8 @@ jobs:
           BRIEFING_DATA_DIR: ${{ github.workspace }}/_data
           BRIEFING_LOGS_DIR: ${{ github.workspace }}/_logs
         run: |
-          python -m briefing || code=$?
+          # --force: 같은 날 재실행(수동/코드변경)에도 산출물을 다시 생성해 Pages 갱신
+          python -m briefing --force || code=$?
           # 1=렌더 실패만 CI 실패로 취급 (2=발송, 3=빈 브리핑은 통과)
           if [ "${code:-0}" = "1" ]; then exit 1; fi
           ls -la "$GITHUB_WORKSPACE/published" || true
