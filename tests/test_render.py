@@ -32,15 +32,26 @@ def test_email_html_structure_and_escaping():
     assert "cdn" not in html.lower() and "googleapis" not in html.lower()
 
 
-def test_email_html_handles_missing_data():
+def test_email_html_omits_krx_when_no_data():
     p = sample_payload()
     p.kospi = None
     p.kosdaq = None
     p.flows.data.clear()
     p.news = []
     html = renderer.render_email_html(p, sample_output())
-    assert "데이터 없음" in html
+    # KRX 데이터가 없으면 지수·투자자별 순매수 섹션 자체가 빠진다
+    assert "투자자별 순매수" not in html
+    assert "전일 종가" not in html
+    assert "출처: OPENDART" in html  # 출처에서도 KRX 빠짐
     assert "수집된 헤드라인이 없습니다" in html
+    # 공시 기반 pick 은 유지
+    assert "오늘 눈여겨볼 종목 3" in html
+
+
+def test_email_html_shows_krx_when_data_present():
+    html = renderer.render_email_html(sample_payload(), sample_output())
+    assert "투자자별 순매수 상위 10" in html
+    assert "출처: KRX, OPENDART" in html
 
 
 def test_plain_text_strips_table_pipes_and_quote():

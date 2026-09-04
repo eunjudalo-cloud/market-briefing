@@ -45,13 +45,29 @@ def _stub_collectors(monkeypatch):
         )
 
     def fake_dart(target_date, ws, we, **kw):
-        return [Disclosure(
-            corp_name="가온전자", stock_code="123450",
-            report_name="단일판매ㆍ공급계약체결",
-            category=DisclosureCategory.SUPPLY_CONTRACT,
-            received_at=datetime(2026, 9, 3, 19, 30, tzinfo=KST),
-            url="https://dart.fss.or.kr/x", key_figures={"계약금액": "480억원"},
-        )]
+        return [
+            Disclosure(
+                corp_name="가온전자", stock_code="123450",
+                report_name="단일판매ㆍ공급계약체결",
+                category=DisclosureCategory.SUPPLY_CONTRACT,
+                received_at=datetime(2026, 9, 3, 19, 30, tzinfo=KST),
+                url="https://dart.fss.or.kr/x", key_figures={"계약금액": "480억원"},
+            ),
+            Disclosure(
+                corp_name="라온바이오", stock_code="234560",
+                report_name="유상증자결정",
+                category=DisclosureCategory.CAPITAL_INCREASE,
+                received_at=datetime(2026, 9, 4, 6, 0, tzinfo=KST),
+                url="https://dart.fss.or.kr/y", key_figures={"자금조달금액": "약 300억원"},
+            ),
+            Disclosure(
+                corp_name="대성산업", stock_code="345670",
+                report_name="최대주주변경",
+                category=DisclosureCategory.LARGEST_SHAREHOLDER_CHANGE,
+                received_at=datetime(2026, 9, 4, 6, 30, tzinfo=KST),
+                url="https://dart.fss.or.kr/z", key_figures={},
+            ),
+        ]
 
     def fake_rss(feeds, ws, we, max_items):
         return [NewsHeadline(title="코스피 외국인 순매수 전환", url="https://ex.com/1",
@@ -92,6 +108,10 @@ def test_pipeline_generates_briefing(_stub_collectors, _isolated_dirs):
     assert "\n1. " in text and "\n2. " in text and "\n3. " in text
     assert "가온전자(123450)" in text
     assert "480억원" in text
+    # KRX 기본 비활성 → 지수·투자자별 순매수 섹션 없음
+    assert "## 지수" not in text
+    assert "투자자별 순매수" not in text
+    assert "출처: OPENDART" in text
 
 
 def test_non_business_day_is_skipped(_stub_collectors, _isolated_dirs):

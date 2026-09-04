@@ -95,7 +95,7 @@ def test_generate_no_market_data_skips_openai(monkeypatch):
     out = oc.generate(empty, model="gpt-4o", api_key="sk-dummy", tz=KST)
     assert out.fallback_used is True
     assert out.picks == []
-    assert "없음" in out.market_summary
+    assert "공시가 없습니다" in out.market_summary
 
 
 def test_validate_picks_drops_unknown_and_forbidden():

@@ -34,7 +34,8 @@ SYSTEM_CONSTRAINTS = (
     "4) 뉴스 제목은 맥락 파악용일 뿐이다. 뉴스 제목에 있는 수치(지수 등락률 등)를 "
     "market_summary 에 인용하지 마라.\n"
     "5) kospi 또는 kosdaq 값이 null 이면 그 지수의 등락을 언급하지 마라. "
-    "지수·수급 데이터가 모두 비어 있으면 market_summary 는 '전일 지수·수급 데이터 없음' 으로 써라.\n"
+    "지수·수급 데이터가 비어 있으면 market_summary 는 공시(disclosures) 활동을 기준으로 요약하고, "
+    "공시도 없으면 '전일 대상 공시가 없습니다.' 로 써라.\n"
     "6) '눈여겨볼 종목'의 근거(basis_text)에는 입력에 있는 공시 내용 또는 "
     "수급 수치를 그대로 인용하라. 종목코드(code)는 입력의 investor_net_buy_top 또는 "
     "disclosures 에 실제로 존재하는 값만 쓴다. 없으면 picks 를 비워라.\n"
@@ -243,7 +244,16 @@ def _rule_based_picks(payload: BriefingPayload) -> list[Pick]:
 
 def _rule_based(payload: BriefingPayload, tz: ZoneInfo) -> BriefingOutput:
     quotes = [s for s in (_fmt_quote(payload.kospi), _fmt_quote(payload.kosdaq)) if s]
-    summary = " / ".join(quotes) if quotes else "전일 지수 데이터 없음"
+    if quotes:
+        summary = " / ".join(quotes)
+    elif payload.disclosures:
+        cats = sorted({d.category.value for d in payload.disclosures})
+        summary = (
+            f"전일 마감 후 접수 공시 중 대상 {len(payload.disclosures)}건 "
+            f"({'·'.join(cats)})."
+        )
+    else:
+        summary = "전일 대상 공시가 없습니다."
     return BriefingOutput(
         market_summary=summary,
         picks=_rule_based_picks(payload),

@@ -73,18 +73,21 @@ def run(
     # --- 수집 (부분 실패 허용) ---
     kospi = kosdaq = None
     flows: InvestorFlows | None = None
-    try:
-        kospi, kosdaq, flows = krx.collect(
-            target_date, window_start, window_end,
-            data_go_kr_key=settings.data_go_kr_key,
-        )
-        _snapshot(target_date, "krx", {
-            "kospi": kospi.model_dump(mode="json") if kospi else None,
-            "kosdaq": kosdaq.model_dump(mode="json") if kosdaq else None,
-            "flows": flows.model_dump(mode="json") if flows else None,
-        })
-    except Exception:
-        log.exception("KRX 수집 실패 — 지수/수급 섹션을 비웁니다.")
+    if settings.include_krx:
+        try:
+            kospi, kosdaq, flows = krx.collect(
+                target_date, window_start, window_end,
+                data_go_kr_key=settings.data_go_kr_key,
+            )
+            _snapshot(target_date, "krx", {
+                "kospi": kospi.model_dump(mode="json") if kospi else None,
+                "kosdaq": kosdaq.model_dump(mode="json") if kosdaq else None,
+                "flows": flows.model_dump(mode="json") if flows else None,
+            })
+        except Exception:
+            log.exception("KRX 수집 실패 — 지수/수급 섹션을 비웁니다.")
+    else:
+        log.info("KRX 수집 비활성화 (include_krx=false) — 지수·수급 섹션 생략")
 
     disclosures = []
     try:

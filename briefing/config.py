@@ -58,6 +58,8 @@ class Settings(BaseSettings):
     # 기타
     briefing_tz: str = "Asia/Seoul"
     news_max_items: int = 15
+    # KRX(지수·투자자별 순매수) 수집/표시 여부. 기본 off — 필요 시 BRIEFING_INCLUDE_KRX=1
+    include_krx: bool = False
 
 
 class FeedConfig(BaseModel):

@@ -81,23 +81,30 @@ def _html_env() -> Environment:
     return env
 
 
+def _show_krx(payload: BriefingPayload) -> bool:
+    """지수/수급 데이터가 하나라도 있으면 KRX 섹션을 노출."""
+    if payload.kospi or payload.kosdaq:
+        return True
+    return any(
+        payload.flows.top(inv, mk) for inv in InvestorType for mk in Market
+    )
+
+
 def render_markdown(payload: BriefingPayload, output: BriefingOutput) -> str:
     tmpl = _md_env().get_template("template.md.j2")
     return tmpl.render(
-        p=payload,
-        o=output,
-        investors=list(InvestorType),
-        markets=list(Market),
+        p=payload, o=output,
+        investors=list(InvestorType), markets=list(Market),
+        show_krx=_show_krx(payload),
     )
 
 
 def render_email_html(payload: BriefingPayload, output: BriefingOutput) -> str:
     tmpl = _html_env().get_template("template.email.html.j2")
     return tmpl.render(
-        p=payload,
-        o=output,
-        investors=list(InvestorType),
-        markets=list(Market),
+        p=payload, o=output,
+        investors=list(InvestorType), markets=list(Market),
+        show_krx=_show_krx(payload),
     )
 
 

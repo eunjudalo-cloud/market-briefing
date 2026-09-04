@@ -57,6 +57,7 @@
     </div>
   </td></tr>
 
+  {% if show_krx %}
   <tr><td class="px" style="padding:18px 32px 4px;">
     {{ H2('지수', '(전일 종가)') }}
     <table role="presentation" class="dt" width="100%" style="width:100%;">
@@ -108,6 +109,7 @@
       {% endfor %}
     {% endfor %}
   </td></tr>
+  {% endif %}
 
   <tr><td class="px" style="padding:18px 32px 4px;">
     {{ H2('오늘 눈여겨볼 종목 3') }}
@@ -150,7 +152,7 @@
     <hr class="rule" style="border:none;border-top:1px solid #e2e5ea;margin:0 0 12px;">
     <div class="muted" style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Malgun Gothic',sans-serif;font-size:11px;line-height:1.6;color:#8a9099;">
       본 자료는 정보 제공 목적이며 투자 자문이나 매매 추천이 아닙니다.<br>
-      출처: KRX, OPENDART, 각 매체 RSS · 수집 창 {{ p.window_start.strftime('%Y-%m-%d %H:%M') }} ~ {{ p.window_end.strftime('%H:%M') }} KST · 생성 {{ o.generated_at.strftime('%Y-%m-%d %H:%M') }} KST
+      출처: {% if show_krx %}KRX, {% endif %}OPENDART, 각 매체 RSS · 수집 창 {{ p.window_start.strftime('%Y-%m-%d %H:%M') }} ~ {{ p.window_end.strftime('%H:%M') }} KST · 생성 {{ o.generated_at.strftime('%Y-%m-%d %H:%M') }} KST
     </div>
   </td></tr>
 </table>
