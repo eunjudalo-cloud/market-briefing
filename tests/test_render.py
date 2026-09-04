@@ -63,20 +63,30 @@ def test_plain_text_strips_table_pipes_and_quote():
 
 
 def test_archive_build_index(tmp_path: Path):
-    (tmp_path / "브리핑_2026-09-03.md").write_text("# 3일 브리핑\n\n내용", encoding="utf-8")
-    (tmp_path / "브리핑_2026-09-04.md").write_text("# 4일 브리핑\n\n최신 내용", encoding="utf-8")
-    (tmp_path / "브리핑_잘못된이름.md").write_text("무시", encoding="utf-8")
+    p, o = sample_payload(), sample_output()
+    (tmp_path / "브리핑_2026-09-03.html").write_text(
+        renderer.render_email_html(p, o).replace("2026-09-04", "2026-09-03"),
+        encoding="utf-8",
+    )
+    (tmp_path / "브리핑_2026-09-04.html").write_text(
+        renderer.render_email_html(p, o), encoding="utf-8"
+    )
+    (tmp_path / "브리핑_잘못된이름.html").write_text("무시", encoding="utf-8")
 
     out = archive.build_index(tmp_path)
     assert out is not None and out.name == "index.html"
     html = out.read_text(encoding="utf-8")
 
-    # 최신순
+    # 내비: 최신순, 지난 날짜는 .html 로 링크
     assert html.index("2026-09-04") < html.index("2026-09-03")
-    assert 'href="브리핑_2026-09-04.md"' in html
+    assert 'href="브리핑_2026-09-03.html"' in html
     assert "잘못된이름" not in html
-    # 최신 미리보기 삽입
-    assert "최신 내용" in html
+    # 최신 브리핑 본문(클릭 가능한 링크 포함)이 그대로 들어감
+    assert "오늘 눈여겨볼 종목 3" in html
+    assert 'href="https://dart.fss.or.kr/dsaf001/main.do?rcpNo=20260903900001"' in html
+    assert "<!doctype html>" in html.lower()
+    # .nojekyll 생성
+    assert (tmp_path / ".nojekyll").exists()
 
 
 def test_write_sample_fixture():
