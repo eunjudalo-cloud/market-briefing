@@ -1,0 +1,58 @@
+# 데일리 마켓 브리핑 — {{ p.target_date.isoformat() }} (오전 7시 기준)
+
+## 시장 한 줄 요약
+{{ o.market_summary }}
+{% if o.fallback_used %}
+
+> AI 요약 미실행/실패 — 수치 기반 대체본입니다.
+{% endif %}
+
+## 지수 (전일 종가)
+| 지수 | 종가 | 전일대비 | 등락률 |
+|---|---|---|---|
+{% for q in [p.kospi, p.kosdaq] %}
+{% if q and q.close is not none %}
+| {{ q.name }} | {{ "%.2f"|format(q.close) }} | {{ "%+.2f"|format(q.change) if q.change is not none else "-" }} | {{ "%+.2f%%"|format(q.change_pct) if q.change_pct is not none else "-" }} |
+{% else %}
+| {{ q.name if q else "-" }} | 데이터 없음 | - | - |
+{% endif %}
+{% endfor %}
+
+## 투자자별 순매수 상위 10 (전일)
+{% for inv in investors %}
+### {{ inv.value }}
+{% for mk in markets %}
+**{{ mk.value }}**
+{% set rows = p.flows.top(inv, mk) %}
+{% if rows %}
+{% for it in rows %}
+{{ loop.index }}. {{ it.name }}({{ it.code }}) {{ "%+.1f"|format(it.net_buy_krw_eok) }}억
+{% endfor %}
+{% else %}
+- 데이터 없음
+{% endif %}
+
+{% endfor %}
+{% endfor %}
+## 오늘 눈여겨볼 종목 3
+{% if o.picks %}
+{% for pick in o.picks %}
+{{ loop.index }}. {{ pick.name }}({{ pick.code }})
+   - 근거: [{{ "공시" if pick.basis_type.value == "disclosure" else "수급" }}] {{ pick.basis_text }}{{ (" — " ~ pick.source_url) if pick.source_url else "" }}
+{% endfor %}
+{% else %}
+- 공시·수급 근거를 갖춘 종목이 확인되지 않았습니다.
+{% endif %}
+
+## 뉴스 헤드라인 (제목·링크)
+{% if p.news %}
+{% for n in p.news %}
+- [{{ n.source }}] {{ n.title }} — {{ n.url }}
+{% endfor %}
+{% else %}
+- 수집된 헤드라인이 없습니다.
+{% endif %}
+
+---
+본 자료는 정보 제공 목적이며 투자 자문이나 매매 추천이 아닙니다.
+출처: KRX, OPENDART, 각 매체 RSS · 수집 창 {{ p.window_start.strftime("%Y-%m-%d %H:%M") }} ~ {{ p.window_end.strftime("%H:%M") }} KST · 생성 {{ o.generated_at.strftime("%Y-%m-%d %H:%M") }} KST

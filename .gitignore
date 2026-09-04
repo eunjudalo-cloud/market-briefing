@@ -1,0 +1,26 @@
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+*.egg-info/
+
+# 산출물 / 수집 스냅샷 / 로그 (내용은 커밋하지 않되 폴더는 유지)
+output/*
+data/*
+logs/*
+!output/.gitkeep
+!data/.gitkeep
+!logs/.gitkeep
+
+# CI 배포용 임시 경로
+published/
+_data/
+_logs/
+
+# 내부 문서 (공개 저장소에 올리지 않음)
+검토리포트_4단계.md
+emailpayload.json
+_email_*.b64
+_plain.txt

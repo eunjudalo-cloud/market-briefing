@@ -1,0 +1,16 @@
+# 경제지 RSS 피드. 증권/마켓 섹션 우선. (2단계에서 실제 응답으로 검증 완료)
+# 매체가 전체 데스크톱 Chrome User-Agent 를 차단하는 경우가 있어
+# 수집기는 피드 리더용 UA 로 요청한다 (briefing/collectors/rss.py).
+feeds:
+  - name: 한국경제
+    url: "https://www.hankyung.com/feed/finance"
+  - name: 매일경제
+    url: "https://www.mk.co.kr/rss/50200011/"
+  - name: 머니투데이
+    url: "https://rss.mt.co.kr/mt_news_stock.xml"
+  - name: 이데일리
+    url: "http://rss.edaily.co.kr/edaily_news.xml"
+  - name: 연합뉴스
+    url: "https://www.yna.co.kr/rss/economy.xml"
+
+max_items: 15
